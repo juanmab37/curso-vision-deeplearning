@@ -1,3 +1,5 @@
+#!/usr/bin/python2
+
 import os
 import numpy as np
 
@@ -82,8 +84,17 @@ def create_dataset(filename, X, y, size):
 
 imgs = []
 
-for filename in list_pictures(argv[1]):
-    img = load_img(filename)
-    imgs.append(img_to_array(img))
+if len(argv) <> 3:
+    print "USAGE: dir filename"
 
-create_dataset("test.h5", imgs, len(imgs) * [1], imgs[0].shape)
+else:
+
+    input_dir = argv[1]
+    h5_filename = argv[2]
+
+    for filename in list_pictures(argv[1]):
+        img = load_img(filename)
+        imgs.append(img_to_array(img))
+
+    print imgs[0].shape
+    create_dataset(h5_filename, imgs, len(imgs) * [1], imgs[0].shape)
