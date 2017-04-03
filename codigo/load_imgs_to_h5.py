@@ -72,6 +72,7 @@ def list_pictures(directory, ext='.png'):
             if ext in f]
 
 def create_dataset(filename, X, y, size):
+    assert(len(X) == len(y))
     import h5py
     f = h5py.File(filename, 'w')
     X_size = (len(X), size[0], size[1], size[2])
@@ -82,12 +83,17 @@ def create_dataset(filename, X, y, size):
     y_dset[:] = y
     f.close()
 
-imgs = []
 
 if len(argv) <> 3:
     print "USAGE: dir filename"
 
 else:
+
+    imgs = []
+    dirs = dict()
+    labels = []
+    i = 0
+
 
     input_dir = argv[1]
     h5_filename = argv[2]
@@ -95,6 +101,15 @@ else:
     for filename in list_pictures(argv[1]):
         img = load_img(filename)
         imgs.append(img_to_array(img))
+        label = filename.replace(input_dir,"")
+        label = "/".join(label.split("/")[:-1])
+        
+        if not(label in dirs):
+            dirs[label] = i
+            i = i + 1
+       
+        labels.append(dirs[label])
 
     print imgs[0].shape
-    create_dataset(h5_filename, imgs, len(imgs) * [1], imgs[0].shape)
+    print dirs
+    create_dataset(h5_filename, imgs, labels, imgs[0].shape)
