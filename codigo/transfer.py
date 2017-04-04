@@ -17,21 +17,16 @@ from lasagne.nonlinearities import softmax
 from lasagne.utils import floatX
 
 # Seed for reproducibility
-np.random.seed(42)
+np.random.seed(1234)
 
 ## Read a few images and display
-#im = plt.imread('./images/pancakes/images?q=tbn:ANd9GcQ1Jtg2V7Me2uybx1rqxDMV58Ow17JamorQ3GCrW5TUyT1tcr8EMg')
-#plt.imshow(im)
-#
-#im = plt.imread('./images/waffles/images?q=tbn:ANd9GcQ-0-8U4TAw6fn4wDpj8V34AwbhkpK9SNKwobolotFjNcgspX8wmA')
-#plt.imshow(im)
-
-# Model definition for VGG-16, 16-layer model from the paper:
-# "Very Deep Convolutional Networks for Large-Scale Image Recognition"
-# Original source: https://gist.github.com/ksimonyan/211839e770f7b538e2d8
-
-# More pretrained models are available from
-# https://github.com/Lasagne/Recipes/blob/master/modelzoo/
+#def show_images():
+im = plt.imread('./images/pancakes/images?q=tbn:ANd9GcQ1Jtg2V7Me2uybx1rqxDMV58Ow17JamorQ3GCrW5TUyT1tcr8EMg')
+plt.imshow(im)
+plt.show()
+im = plt.imread('./images/waffles/images?q=tbn:ANd9GcQ-0-8U4TAw6fn4wDpj8V34AwbhkpK9SNKwobolotFjNcgspX8wmA')
+plt.imshow(im)
+plt.show()
 
 """HYPERPARAMS"""
 # We need a fairly small batch size to fit a large network like this in GPU memory
@@ -41,6 +36,11 @@ momentum = 0.9
 epochs = 5
 
 """MODEL"""
+# Model definition for VGG-16, 16-layer model from the paper:
+# "Very Deep Convolutional Networks for Large-Scale Image Recognition"
+# Original source: https://gist.github.com/ksimonyan/211839e770f7b538e2d8
+# More pretrained models are available from
+# https://github.com/Lasagne/Recipes/blob/master/modelzoo/
 def build_model():
     net = {}
     net['input'] = InputLayer((None, 3, 224, 224))
@@ -66,7 +66,6 @@ def build_model():
     net['fc7'] = DenseLayer(net['fc6'], num_units=4096)
     net['fc8'] = DenseLayer(net['fc7'], num_units=1000, nonlinearity=None)
     net['prob'] = NonlinearityLayer(net['fc8'], softmax)
-
     return net
 
 # Load model weights and metadata
@@ -74,7 +73,7 @@ d = pickle.load(open('vgg16.pkl'))
 
 # Build the network and fill with pretrained weights
 net = build_model()
-lasagne.layers.set_all_param_values(net['prob'], d['param values'])
+#lasagne.layers.set_all_param_values(net['prob'], d['param values'])
 
 # We'll connect our output classifier to the last fully connected layer of the network
 output_layer = DenseLayer(net['fc7'], num_units=2, nonlinearity=softmax)
@@ -89,36 +88,31 @@ IMAGE_MEAN = d['mean value'][:, np.newaxis, np.newaxis]
 
 def prep_image(fn, ext='jpg'):
     im = plt.imread(fn, ext)
-
     # Resize so smallest dim = 256, preserving aspect ratio
     h, w, _ = im.shape
     if h < w:
         im = skimage.transform.resize(im, (256, w * 256 / h), preserve_range=True)
     else:
         im = skimage.transform.resize(im, (h * 256 / w, 256), preserve_range=True)
-
     # Central crop to 224x224
     h, w, _ = im.shape
     im = im[h // 2 - 112:h // 2 + 112, w // 2 - 112:w // 2 + 112]
-
     rawim = np.copy(im).astype('uint8')
-
     # Shuffle axes to c01
     im = np.swapaxes(np.swapaxes(im, 1, 2), 0, 1)
-
     # discard alpha channel if present
     im = im[:3]
-
     # Convert to BGR
     im = im[::-1, :, :]
-
     im = im - IMAGE_MEAN
     return rawim, floatX(im[np.newaxis])
 
 
 # Test preprocesing and show the cropped input
-#rawim, im = prep_image('./images/waffles/images?q=tbn:ANd9GcQ-0-8U4TAw6fn4wDpj8V34AwbhkpK9SNKwobolotFjNcgspX8wmA')
-#plt.imshow(rawim)
+#def show_prepro():
+rawim, im = prep_image('./images/waffles/images?q=tbn:ANd9GcQ-0-8U4TAw6fn4wDpj8V34AwbhkpK9SNKwobolotFjNcgspX8wmA')
+plt.imshow(rawim)
+plt.show()
 
 # Load and preprocess the entire dataset into numpy arrays
 X = []
@@ -146,8 +140,8 @@ y_val = y[val_ix]
 X_te = X[test_ix]
 y_te = y[test_ix]
 
-# Define loss function and metrics, and get an updates dictionary
 """LOSS"""
+# Define loss function and metrics, and get an updates dictionary
 X_sym = T.tensor4()
 y_sym = T.ivector()
 
@@ -158,12 +152,10 @@ loss = loss.mean()
 acc = T.mean(T.eq(T.argmax(prediction, axis=1), y_sym),
              dtype=theano.config.floatX)
 
-
 """OPTIMIZER"""
 params = lasagne.layers.get_all_params(output_layer, trainable=True)
 updates = lasagne.updates.nesterov_momentum(
     loss, params, learning_rate=learning_rate, momentum=momentum)
-
 
 # Compile functions for training, validation and prediction
 """TRAINING STEP FUNCTION"""
@@ -173,7 +165,7 @@ train_fn = theano.function([X_sym, y_sym], loss, updates=updates)
 val_fn = theano.function([X_sym, y_sym], [loss, acc])
 pred_fn = theano.function([X_sym], prediction)
 
-"""MAIN LOOP HELPER FUNCTIONS"""
+"""MAIN LOOP HELPER FUNCTION"""
 # generator splitting an iterable into chunks of maximum length N
 def batches(iterable, N):
     chunk = []
@@ -185,20 +177,13 @@ def batches(iterable, N):
     if chunk:
         yield chunk
 
-def train_batch():
-    ix = range(len(y_tr))
-    np.random.shuffle(ix)
-    ix = ix[:BATCH_SIZE]
-    return train_fn(X_tr[ix], y_tr[ix])
-
 """TRANING MAIN LOOP"""
 for epoch in range(epochs):
-    for batch in range(25):
-        loss = train_batch()
+    ix = range(len(y_tr))
+    for batch in batches(ix, BATCH_SIZE):
+        loss = train_fn(X_tr[batch], y_tr[batch])
 
     ix = range(len(y_val))
-    np.random.shuffle(ix)
-
     loss_tot = 0.
     acc_tot = 0.
     for chunk in batches(ix, BATCH_SIZE):
@@ -211,6 +196,7 @@ for epoch in range(epochs):
     print(epoch, loss_tot, acc_tot * 100)
 
 """SHOW RESULTS"""
+#def show_results():
 def deprocess(im):
     im = im[::-1, :, :]
     im = np.swapaxes(np.swapaxes(im, 0, 1), 1, 2)
@@ -218,18 +204,16 @@ def deprocess(im):
     im = im / im.max()
     return im
 
-# Plot some results from the validation set
-p_y = pred_fn(X_val[:25]).argmax(-1)
-
+# Plot some results from the test set
+p_y = pred_fn(X_te[:25]).argmax(-1)
 plt.figure(figsize=(12, 12))
 for i in range(0, 25):
     plt.subplot(5, 5, i + 1)
-    plt.imshow(deprocess(X_val[i]))
-    true = y_val[i]
+    plt.imshow(deprocess(X_te[i]))
+    true = y_te[i]
     pred = p_y[i]
     color = 'green' if true == pred else 'red'
     plt.text(0, 0, true, color='black', bbox=dict(facecolor='white', alpha=1))
     plt.text(0, 32, pred, color=color, bbox=dict(facecolor='white', alpha=1))
-
     plt.axis('off')
-
+plt.show()
