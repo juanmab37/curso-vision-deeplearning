@@ -16,6 +16,12 @@ from lasagne.layers import Pool2DLayer as PoolLayer
 from lasagne.nonlinearities import softmax
 from lasagne.utils import floatX
 
+# Download and unpack dataset:
+#wget -N https://s3.amazonaws.com/emolson/pydata/images.tgz
+#tar -xf images.tgz
+# Download a pickle containing the pretrained weights:
+#wget -N https://s3.amazonaws.com/lasagne/recipes/pretrained/imagenet/vgg16.pkl
+
 # Seed for reproducibility
 np.random.seed(1234)
 
