@@ -52,7 +52,6 @@ loss = T.nnet.categorical_crossentropy(model_prob, y).mean()
 g_W = T.grad(cost=loss, wrt=W)
 g_b = T.grad(cost=loss, wrt=b)
 
-# start-snippet-3
 # specify how to update the parameters of the model as a list of
 # (variable, update expression) pairs.
 updates = [(W, W - hparams.lr * g_W),
