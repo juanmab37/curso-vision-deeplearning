@@ -20,7 +20,6 @@ from lasagne.utils import floatX
 np.random.seed(1234)
 
 ## Read a few images and display
-#def show_images():
 im = plt.imread('./images/pancakes/images?q=tbn:ANd9GcQ1Jtg2V7Me2uybx1rqxDMV58Ow17JamorQ3GCrW5TUyT1tcr8EMg')
 plt.imshow(im)
 plt.show()
@@ -73,7 +72,7 @@ d = pickle.load(open('vgg16.pkl'))
 
 # Build the network and fill with pretrained weights
 net = build_model()
-#lasagne.layers.set_all_param_values(net['prob'], d['param values'])
+lasagne.layers.set_all_param_values(net['prob'], d['param values'])
 
 # We'll connect our output classifier to the last fully connected layer of the network
 output_layer = DenseLayer(net['fc7'], num_units=2, nonlinearity=softmax)
@@ -109,7 +108,6 @@ def prep_image(fn, ext='jpg'):
 
 
 # Test preprocesing and show the cropped input
-#def show_prepro():
 rawim, im = prep_image('./images/waffles/images?q=tbn:ANd9GcQ-0-8U4TAw6fn4wDpj8V34AwbhkpK9SNKwobolotFjNcgspX8wmA')
 plt.imshow(rawim)
 plt.show()
@@ -196,7 +194,6 @@ for epoch in range(epochs):
     print(epoch, loss_tot, acc_tot * 100)
 
 """SHOW RESULTS"""
-#def show_results():
 def deprocess(im):
     im = im[::-1, :, :]
     im = np.swapaxes(np.swapaxes(im, 0, 1), 1, 2)
