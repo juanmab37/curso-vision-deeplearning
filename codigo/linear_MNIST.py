@@ -87,5 +87,6 @@ for it in xrange(hparams.n_iter):
     X_train, y_train = dataset.get_train_minibatch(it)
     trainig_loss = train_model(X_train,y_train)
 
+    """MONITOR"""
     if it%10 == 0:
         X_valid, y_valid = dataset.get_valid_minibatch(it/10)
