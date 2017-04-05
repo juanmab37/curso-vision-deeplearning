@@ -96,7 +96,7 @@ predict = theano.function(
 )
 
 """TRANING MAIN LOOP"""
-mon_frec = 1000
+mon_frec = 100
 for it in xrange(hparams.n_iter):
 
     X_train, y_train = dataset.get_train_batch(it,hparams.batch_size)
