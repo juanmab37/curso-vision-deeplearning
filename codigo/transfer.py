@@ -156,8 +156,10 @@ loss = loss.mean()
 acc = T.mean(T.eq(T.argmax(prediction, axis=1), y_sym),
              dtype=theano.config.floatX)
 
-"""OPTIMIZER"""
+"""PARAMS"""
 params = lasagne.layers.get_all_params(output_layer, trainable=True)
+
+"""OPTIMIZER"""
 updates = lasagne.updates.nesterov_momentum(
     loss, params, learning_rate=learning_rate, momentum=momentum)
 
