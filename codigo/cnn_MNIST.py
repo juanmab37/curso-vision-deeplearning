@@ -2,7 +2,7 @@ import numpy
 import theano
 import theano.tensor as T
 import argparse
-
+import pickle
 
 import lasagne
 
@@ -16,6 +16,7 @@ parser.add_argument("--lr", type = float, default = 0.01, help= 'Learning Rate')
 parser.add_argument("--momentum", type = float, default = 0.9, help= 'Momentum')
 
 parser.add_argument("--data_dir", default = '/home/lucas/data/', help= 'Directorio donde buscar el dataset')
+parser.add_argument("--param_file", default = 'params.pkl')
 hparams = parser.parse_args()
 print hparams
 
@@ -100,6 +101,7 @@ predict = theano.function(
 mon_frec = 10
 valid_size = 10000
 valid_batch = 500
+best_error = 1.0
 for it in xrange(hparams.n_iter):
 
     X_train, y_train = dataset.get_train_batch(it,hparams.batch_size)
@@ -116,4 +118,30 @@ for it in xrange(hparams.n_iter):
         y_pred = predict(X_train)
         train_error = (y_pred != y_train).mean()
 
-        print it, train_loss, round(train_error*100,2), round(valid_error*100,2)
+        print it, train_loss, train_error, valid_error
+
+        if best_error>valid_error:
+            best_error = valid_error
+            values = lasagne.layers.get_all_param_values(network)
+            with open(hparams.param_file, 'w') as f:
+                pickle.dump(values, f)
+
+
+"""PREDICTION"""
+print 'Cargando el mejor modelo guardado'
+values = pickle.load(open(hparams.param_file))
+
+# Build the network and fill with pretrained weights
+lasagne.layers.set_all_param_values(network, values)
+
+valid_size = 10000
+valid_batch = 500
+
+valid_error = 0.0
+for valit in range(valid_size / valid_batch):
+    X_valid, y_valid = dataset.get_valid_batch(valit, valid_batch)
+    y_pred = predict(X_valid)
+    valid_error += (y_pred != y_valid).mean()
+valid_error /= valid_size / valid_batch
+
+print valid_error
