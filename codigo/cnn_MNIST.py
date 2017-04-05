@@ -11,7 +11,7 @@ import mnist
 """HYPERPARAMS"""
 parser = argparse.ArgumentParser()
 parser.add_argument("--batch_size", type = int, default = 500, help = 'Size of the minibatch')
-parser.add_argument("--n_iter", type = int, default = 50000)
+parser.add_argument("--n_iter", type = int, default = 2000)
 parser.add_argument("--lr", type = float, default = 0.01, help= 'Learning Rate')
 parser.add_argument("--momentum", type = float, default = 0.9, help= 'Momentum')
 
@@ -25,6 +25,7 @@ dataset = mnist.MNIST(data_dir=hparams.data_dir, shape=(-1,1,28,28))
 
 
 """MODEL"""
+# https://github.com/Lasagne/Lasagne/blob/master/examples/mnist.py
 def build_cnn(input_var=None):
     # Input layer
     network = lasagne.layers.InputLayer(shape=(None, 1, 28, 28),
@@ -96,7 +97,7 @@ predict = theano.function(
 )
 
 """TRANING MAIN LOOP"""
-mon_frec = 1000
+mon_frec = 10
 valid_size = 10000
 valid_batch = 500
 for it in xrange(hparams.n_iter):
@@ -115,4 +116,4 @@ for it in xrange(hparams.n_iter):
         y_pred = predict(X_train)
         train_error = (y_pred != y_train).mean()
 
-        print it, train_loss, train_error, valid_error
+        print it, train_loss, round(train_error*100,2), round(valid_error*100,2)
