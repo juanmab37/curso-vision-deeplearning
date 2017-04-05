@@ -96,7 +96,9 @@ predict = theano.function(
 )
 
 """TRANING MAIN LOOP"""
-mon_frec = 100
+mon_frec = 1000
+valid_size = 10000
+valid_batch = 500
 for it in xrange(hparams.n_iter):
 
     X_train, y_train = dataset.get_train_batch(it,hparams.batch_size)
@@ -104,9 +106,12 @@ for it in xrange(hparams.n_iter):
 
     """MONITOR"""
     if it % mon_frec == 0:
-        X_valid, y_valid = dataset.get_valid_batch(it/mon_frec,hparams.batch_size)
-        y_pred = predict(X_valid)
-        valid_error = (y_pred != y_valid).mean()
+        valid_error = 0.0
+        for valit in range(valid_size/valid_batch):
+            X_valid, y_valid = dataset.get_valid_batch(valit, valid_batch)
+            y_pred = predict(X_valid)
+            valid_error += (y_pred != y_valid).mean()
+        valid_error /= valid_size/valid_batch
         y_pred = predict(X_train)
         train_error = (y_pred != y_train).mean()
 
