@@ -8,7 +8,8 @@ class MNIST(data.Dataset):
 
     def __init__(self, data_file = 'mnist.pkl.gz',
                  #data_dir='/share/datasets/'):
-                 data_dir = '/home/lucas/data/'):
+                 data_dir = '/home/lucas/data/',
+                 shape = (-1,784)):
         #############
         # LOAD DATA #
         #############
@@ -42,9 +43,9 @@ class MNIST(data.Dataset):
         X_valid, y_valid = valid_set
         X_train, y_train = train_set
 
-        X_test  = data.floatX(X_test)
-        X_valid = data.floatX(X_valid)
-        X_train = data.floatX(X_train)
+        X_test  = data.floatX(X_test).reshape(shape)
+        X_valid = data.floatX(X_valid).reshape(shape)
+        X_train = data.floatX(X_train).reshape(shape)
 
         y_test = data.floatX(y_test)
         y_valid = data.floatX(y_valid)

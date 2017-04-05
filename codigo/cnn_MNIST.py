@@ -10,17 +10,18 @@ import mnist
 
 """HYPERPARAMS"""
 parser = argparse.ArgumentParser()
-parser.add_argument("--batch_size", type = int, default = 600, help = 'Size of the minibatch')
+parser.add_argument("--batch_size", type = int, default = 500, help = 'Size of the minibatch')
 parser.add_argument("--n_iter", type = int, default = 50000)
-parser.add_argument("--init_scale", type = float, default = 1e-6, help = 'Weights init scale')
 parser.add_argument("--lr", type = float, default = 0.01, help= 'Learning Rate')
 parser.add_argument("--momentum", type = float, default = 0.9, help= 'Momentum')
+
+parser.add_argument("--data_dir", default = '/home/lucas/data/', help= 'Directorio donde buscar el dataset')
 hparams = parser.parse_args()
 print hparams
 
 
 """DATASET"""
-dataset = mnist.MNIST()
+dataset = mnist.MNIST(data_dir=hparams.data_dir, shape=(-1,1,28,28))
 
 
 """MODEL"""
@@ -61,7 +62,8 @@ def build_cnn(input_var=None):
 X = T.tensor4('inputs')
 network = build_cnn(X)
 model_prob = lasagne.layers.get_output(network)
-model_out = T.argmax(model_prob, axis=1)
+det_model_prob = lasagne.layers.get_output(network,deterministic=True)
+det_model_out = T.argmax(det_model_prob, axis=1)
 
 
 """PARAMS"""
@@ -87,14 +89,9 @@ train_model = theano.function(
 
 
 """MONITOR FUNCTIONS"""
-valid_model = theano.function(
-        inputs=[X,y],
-        outputs=loss,
-        updates=None
-)
 predict = theano.function(
         inputs=[X],
-        outputs=model_out,
+        outputs=det_model_out,
         updates=None
 )
 
@@ -108,10 +105,9 @@ for it in xrange(hparams.n_iter):
     """MONITOR"""
     if it % mon_frec == 0:
         X_valid, y_valid = dataset.get_valid_batch(it/mon_frec,hparams.batch_size)
-        valid_loss = valid_model(X_valid,y_valid)
         y_pred = predict(X_valid)
         valid_error = (y_pred != y_valid).mean()
         y_pred = predict(X_train)
         train_error = (y_pred != y_train).mean()
 
-        print it, train_loss, valid_loss, train_error, valid_error
+        print it, train_loss, train_error, valid_error
