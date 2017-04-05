@@ -97,31 +97,21 @@ predict = theano.function(
         updates=None
 )
 
-"""TRANING MAIN LOOP"""
-mon_frec = 1000
+"""PREDICTION"""
+values = pickle.load(open('params.pkl'))
+
+# Build the network and fill with pretrained weights
+lasagne.layers.set_all_param_values(network, values)
+
 valid_size = 10000
 valid_batch = 500
-best_error = 1.0
-for it in xrange(hparams.n_iter):
 
-    X_train, y_train = dataset.get_train_batch(it,hparams.batch_size)
-    train_loss = train_model(X_train,y_train)
+valid_error = 0.0
+for valit in range(valid_size / valid_batch):
+    X_valid, y_valid = dataset.get_valid_batch(valit, valid_batch)
+    y_pred = predict(X_valid)
+    valid_error += (y_pred != y_valid).mean()
+valid_error /= valid_size / valid_batch
 
-    """MONITOR"""
-    if it % mon_frec == 0:
-        valid_error = 0.0
-        for valit in range(valid_size/valid_batch):
-            X_valid, y_valid = dataset.get_valid_batch(valit, valid_batch)
-            y_pred = predict(X_valid)
-            valid_error += (y_pred != y_valid).mean()
-        valid_error /= valid_size/valid_batch
-        y_pred = predict(X_train)
-        train_error = (y_pred != y_train).mean()
+print valid_error
 
-        print it, train_loss, train_error, valid_error
-
-        if best_error>valid_error:
-            best_error = valid_error
-            values = lasagne.layers.get_all_param_values(network)
-            with open(hparams.param_file, 'w') as f:
-                pickle.dump(values, f)
