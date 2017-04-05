@@ -2,18 +2,28 @@ import h5py
 import numpy as np
 from collections import defaultdict
 
+import data
+
 class HDF5Matrix():
     refs = defaultdict(int)
 
-    def __init__(self, datapath, dataset, start, end, normalizer=None):
+    def __init__(self, datapath, dataset, start=None, end=None, normalizer=None):
         if datapath not in list(self.refs.keys()):
             f = h5py.File(datapath)
             self.refs[datapath] = f
         else:
             f = self.refs[datapath]
-        self.start = start
-        self.end = end
+
         self.data = f[dataset]
+
+        if (start == None and end == None):
+            self.start = 0
+            self.end = self.data.shape[0]
+        else:
+            assert(start <> None and end <> None)
+            self.start = start
+            self.end = end
+
         self.normalizer = normalizer
 
     def __len__(self):
@@ -47,8 +57,27 @@ class HDF5Matrix():
 
     @property
     def shape(self):
-        return tuple([self.end - self.start, self.data.shape[1]])
+        return self.data.shape
+        #return tuple([self.end - self.start, self.data.shape[1]])
 
 # example:
 # X_train = HDF5Matrix('dataset.h5', 'X', start=0, end=200) 
 # y_train = HDF5Matrix('dataset.h5', 'y', start=0, end=200) 
+
+class HDF5Dataset(data.Dataset):
+    def __init__(self, train_file, valid_file, test_file):
+
+        X_train = HDF5Matrix(train_file, 'X')
+        y_train = HDF5Matrix(train_file, 'y')
+
+        X_valid = HDF5Matrix(valid_file, 'X')
+        y_valid = HDF5Matrix(valid_file, 'y')
+
+        X_test = HDF5Matrix(test_file, 'X')
+        y_test = HDF5Matrix(test_file, 'y')
+
+        self.shape = X_train.data.shape
+
+        super(HDF5Dataset, self).__init__(X_train=X_train, y_train=y_train,
+                                          X_valid=X_valid, y_valid=y_valid,
+                                          X_test =X_test, y_test=y_test)
