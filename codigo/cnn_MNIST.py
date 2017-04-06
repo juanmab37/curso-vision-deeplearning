@@ -20,6 +20,11 @@ parser.add_argument("--param_file", default = 'params.pkl')
 hparams = parser.parse_args()
 print hparams
 
+#augmented_params =  dict( featurewise_center=True, featurewise_std_normalization=True,
+#    rotation_range=20,
+#    width_shift_range=0.2,
+#    height_shift_range=0.2,
+#    horizontal_flip=True)
 
 """DATASET"""
 dataset = mnist.MNIST(data_dir=hparams.data_dir, shape=(-1,1,28,28))
@@ -104,14 +109,14 @@ valid_batch = 500
 best_error = 1.0
 for it in xrange(hparams.n_iter):
 
-    X_train, y_train = dataset.get_train_batch(it,hparams.batch_size)
+    X_train, y_train = dataset.get_train_batch(hparams.batch_size)
     train_loss = train_model(X_train,y_train)
 
     """MONITOR"""
     if it % mon_frec == 0:
         valid_error = 0.0
         for valit in range(valid_size/valid_batch):
-            X_valid, y_valid = dataset.get_valid_batch(valit, valid_batch)
+            X_valid, y_valid = dataset.get_valid_batch(valid_batch)
             y_pred = predict(X_valid)
             valid_error += (y_pred != y_valid).mean()
         valid_error /= valid_size/valid_batch
@@ -139,7 +144,7 @@ valid_batch = 500
 
 valid_error = 0.0
 for valit in range(valid_size / valid_batch):
-    X_valid, y_valid = dataset.get_valid_batch(valit, valid_batch)
+    X_valid, y_valid = dataset.get_valid_batch(valid_batch)
     y_pred = predict(X_valid)
     valid_error += (y_pred != y_valid).mean()
 valid_error /= valid_size / valid_batch

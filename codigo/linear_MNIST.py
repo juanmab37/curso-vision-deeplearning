@@ -14,7 +14,6 @@ parser.add_argument("--lr", type = float, default = 0.13, help= 'Learning Rate')
 hparams = parser.parse_args()
 print hparams
 
-
 """DATASET"""
 dataset = mnist.MNIST()
 
@@ -82,12 +81,12 @@ predict = theano.function(
 mon_frec = 1000
 for it in xrange(hparams.n_iter):
 
-    X_train, y_train = dataset.get_train_batch(it,hparams.batch_size)
+    X_train, y_train = dataset.get_train_batch(hparams.batch_size)
     train_loss = train_model(X_train,y_train)
 
     """MONITOR"""
     if it % mon_frec == 0:
-        X_valid, y_valid = dataset.get_valid_batch(it/mon_frec,hparams.batch_size)
+        X_valid, y_valid = dataset.get_valid_batch(hparams.batch_size)
         valid_loss = valid_model(X_valid,y_valid)
         y_pred = predict(X_valid)
         valid_error = (y_pred != y_valid).mean()
