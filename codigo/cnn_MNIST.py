@@ -24,10 +24,12 @@ print hparams
 #    rotation_range=20,
 #    width_shift_range=0.2,
 #    height_shift_range=0.2,
-#    horizontal_flip=True)
+#    horizontal_flip=True,
+#    dim_ordering='th',
+#    )
 
 """DATASET"""
-dataset = mnist.MNIST(data_dir=hparams.data_dir, shape=(-1,1,28,28))
+dataset = mnist.MNIST(data_dir=hparams.data_dir, shape=(-1,1,28,28)) #, augmented=augmented_params)
 
 
 """MODEL"""

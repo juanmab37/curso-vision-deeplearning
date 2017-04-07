@@ -46,8 +46,8 @@ class Dataset(object):
     def _get_x_batch(self, X, batch_size):
 
         if self.augmented:
-            X,_ = self.datagen.flow(X, [0]*batch_size, batch_size=batch_size)
-            return X
+            X,_ = self.datagen.flow(X, [0]*batch_size, batch_size=batch_size).next()
+            return floatX(X)
 
         size = X.shape[0]
         n1 = (self.index*batch_size)%size
@@ -62,8 +62,8 @@ class Dataset(object):
     def _get_xy_batch(self, X,y, batch_size):
 
         if self.augmented:
-            X,y = self.datagen.flow(X, y, batch_size=batch_size)
-            return X,y
+            X,y = self.datagen.flow(X, y, batch_size=batch_size).next()
+            return floatX(X),intX(y)
 
         size = X.shape[0]
         n1 = (self.index*batch_size)%size
@@ -75,17 +75,3 @@ class Dataset(object):
 
         else:
             return floatX(X[n1:n2]), intX(y[n1:n2])
-
-
-    """
-    def _get_y_batch(self, y, batch_size):
-        size = y.shape[0]
-        n1 = (self.index * batch_size) % size
-        n2 = ((self.index + 1) * batch_size - 1) % size + 1
-        self.index = n2
-
-        if n1 > n2:
-            return intX(np.concatenate((y[n1:], y[:n2])))
-        else:
-            return intX(y[n1:n2])
-     """
