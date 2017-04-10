@@ -9,6 +9,7 @@ class MNIST(data.Dataset):
     def __init__(self, data_file = 'mnist.pkl.gz',
                  #data_dir='/share/datasets/'):
                  data_dir = '/home/lucas/data/',
+                 augmented = None,
                  shape = (-1,784)):
         #############
         # LOAD DATA #
@@ -53,5 +54,5 @@ class MNIST(data.Dataset):
 
         super(MNIST, self).__init__(X_train=X_train, y_train=y_train,
                                     X_valid=X_valid, y_valid=y_valid,
-                                    X_test =X_test, y_test=y_test)
+                                    X_test =X_test, y_test=y_test, augmented=augmented)
 
