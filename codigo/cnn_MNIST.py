@@ -122,6 +122,7 @@ for it in xrange(hparams.n_iter):
 
         if best_error>valid_error:
             best_error = valid_error
+            it_best = it
             values = lasagne.layers.get_all_param_values(network)
             with open(hparams.param_file, 'w') as f:
                 pickle.dump(values, f)
@@ -144,4 +145,4 @@ for valit in range(valid_size / valid_batch):
     valid_error += (y_pred != y_valid).mean()
 valid_error /= valid_size / valid_batch
 
-print valid_error
+print it_best, valid_error
