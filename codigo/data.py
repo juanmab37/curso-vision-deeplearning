@@ -45,10 +45,6 @@ class Dataset(object):
 
     def _get_x_batch(self, X, batch_size):
 
-        if self.augmented:
-            X,_ = self.datagen.flow(X, [0]*batch_size, batch_size=batch_size).next()
-            return floatX(X)
-
         size = X.shape[0]
         n1 = (self.index*batch_size)%size
         n2 = ((self.index+1)*batch_size-1)%size+1

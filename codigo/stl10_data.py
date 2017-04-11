@@ -12,6 +12,7 @@ class stl10(data.Dataset):
              valid = True,
              test = True,
              unlab = True,
+             augmented = None,
              data_dir='/share/datasets/stl10',
              data_url='http://ai.stanford.edu/~acoates/stl10/stl10_binary.tar.gz'
              ):
@@ -78,7 +79,7 @@ class stl10(data.Dataset):
         super(stl10, self).__init__(X_train=X_train, y_train=y_train,
                                     X_valid=X_valid, y_valid=y_valid,
                                     X_test =X_test, y_test=y_test,
-                                    X_unlab=X_unlab)
+                                    X_unlab=X_unlab, augmented=augmented)
 
     def load_data(self, data_dir, which_set):
 
